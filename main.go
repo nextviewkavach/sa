@@ -21,7 +21,6 @@ import (
 // -------------------
 // Configurable Settings
 // -------------------
-
 const (
 	// DBPath is the location of the database file.
 	DBPath = "data/db/sales.db"
@@ -184,6 +183,7 @@ func saveEntity(bucketName []byte, key string, value interface{}) error {
 		if bucket == nil {
 			return fmt.Errorf("bucket not found")
 		}
+
 		return bucket.Put([]byte(key), data)
 	})
 }
@@ -194,10 +194,12 @@ func getEntity(bucketName []byte, key string, out interface{}) error {
 		if bucket == nil {
 			return fmt.Errorf("bucket not found")
 		}
+
 		data := bucket.Get([]byte(key))
 		if data == nil {
 			return fmt.Errorf("entity not found")
 		}
+
 		return json.Unmarshal(data, out)
 	})
 }
@@ -209,6 +211,7 @@ func getAllEntities(bucketName []byte) ([][]byte, error) {
 		if bucket == nil {
 			return fmt.Errorf("bucket not found")
 		}
+
 		return bucket.ForEach(func(k, v []byte) error {
 			b := make([]byte, len(v))
 			copy(b, v)
@@ -240,6 +243,7 @@ func getUserByUsername(username string) (*User, error) {
 		if err := json.Unmarshal(d, &user); err != nil {
 			continue
 		}
+
 		if user.Username == username {
 			foundUser = &user
 			break
@@ -266,6 +270,7 @@ func getUserByEmail(email string) (*User, error) {
 		if err := json.Unmarshal(d, &user); err != nil {
 			continue
 		}
+
 		if user.Email == email {
 			foundUser = &user
 			break
@@ -292,6 +297,7 @@ func getAllUsers() ([]User, error) {
 			users = append(users, user)
 		}
 	}
+
 	return users, nil
 }
 
@@ -314,6 +320,7 @@ func getClientByCompanyName(companyName string) (*Client, error) {
 		if err := json.Unmarshal(d, &client); err != nil {
 			continue
 		}
+
 		if client.CompanyName == companyName {
 			foundClient = &client
 			break
@@ -340,6 +347,7 @@ func getAllClients() ([]Client, error) {
 			clients = append(clients, client)
 		}
 	}
+
 	return clients, nil
 }
 
@@ -356,6 +364,7 @@ func getClientsByCreator(creatorID string) ([]Client, error) {
 			userClients = append(userClients, client)
 		}
 	}
+
 	return userClients, nil
 }
 
@@ -378,6 +387,7 @@ func getAllVisits() ([]Visit, error) {
 			visits = append(visits, visit)
 		}
 	}
+
 	return visits, nil
 }
 
@@ -394,6 +404,7 @@ func getVisitsByEmployee(employeeID string) ([]Visit, error) {
 			userVisits = append(userVisits, visit)
 		}
 	}
+
 	return userVisits, nil
 }
 
@@ -416,6 +427,7 @@ func getAllProducts() ([]Product, error) {
 			products = append(products, product)
 		}
 	}
+
 	return products, nil
 }
 
@@ -443,6 +455,7 @@ func getAllOrders() ([]Order, error) {
 			orders = append(orders, order)
 		}
 	}
+
 	return orders, nil
 }
 
@@ -472,6 +485,7 @@ func getOrdersByEmployeeID(employeeID string) ([]Order, error) {
 			userOrders = append(userOrders, order)
 		}
 	}
+
 	return userOrders, nil
 }
 
@@ -492,12 +506,14 @@ func deleteUserHandler(c *gin.Context) {
 		if bucket == nil {
 			return fmt.Errorf("bucket not found")
 		}
+
 		return bucket.Delete([]byte(key))
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting user: " + err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted permanently"})
 }
 
@@ -509,12 +525,14 @@ func deleteProductHandler(c *gin.Context) {
 		if bucket == nil {
 			return fmt.Errorf("bucket not found")
 		}
+
 		return bucket.Delete([]byte(key))
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting product: " + err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Product deleted permanently"})
 }
 
@@ -632,6 +650,7 @@ func getUsersHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving users"})
 			return
 		}
+
 		c.JSON(http.StatusOK, users)
 	} else {
 		// Normal user can only see their own profile
@@ -731,6 +750,7 @@ func getClientsHandler(c *gin.Context) {
 				filteredClients = append(filteredClients, client)
 			}
 		}
+
 		c.JSON(http.StatusOK, filteredClients)
 		return
 	}
@@ -743,6 +763,7 @@ func getClientsHandler(c *gin.Context) {
 				userClients = append(userClients, client)
 			}
 		}
+
 		c.JSON(http.StatusOK, userClients)
 		return
 	}
@@ -800,6 +821,7 @@ func getVisitsHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving visits"})
 			return
 		}
+
 		c.JSON(http.StatusOK, visits)
 		return
 	}
@@ -811,6 +833,7 @@ func getVisitsHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving visits"})
 			return
 		}
+
 		c.JSON(http.StatusOK, visits)
 		return
 	}
@@ -821,6 +844,7 @@ func getVisitsHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving visits"})
 		return
 	}
+
 	c.JSON(http.StatusOK, visits)
 }
 
@@ -862,6 +886,7 @@ func getProductsHandler(c *gin.Context) {
 			activeProducts = append(activeProducts, product)
 		}
 	}
+
 	c.JSON(http.StatusOK, activeProducts)
 }
 
@@ -942,6 +967,7 @@ func createOrderHandler(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Visit not found"})
 			return
 		}
+
 		if visit.EmployeeID != username {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Cannot create orders for other users' visits"})
 			return
@@ -979,6 +1005,7 @@ func createOrderHandler(c *gin.Context) {
 			Price:     product.Price,
 			Total:     itemTotal,
 		}
+
 		orderItems = append(orderItems, orderItem)
 	}
 
@@ -1030,6 +1057,7 @@ func getOrdersHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving orders"})
 			return
 		}
+
 		c.JSON(http.StatusOK, orders)
 		return
 	}
@@ -1041,6 +1069,7 @@ func getOrdersHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving orders"})
 			return
 		}
+
 		c.JSON(http.StatusOK, orders)
 		return
 	}
@@ -1051,6 +1080,7 @@ func getOrdersHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving orders"})
 		return
 	}
+
 	c.JSON(http.StatusOK, orders)
 }
 
@@ -1078,6 +1108,7 @@ func dashboardHandler(c *gin.Context) {
 			"total_orders":  len(orders),
 			"timestamp":     time.Now(),
 		}
+
 		c.JSON(http.StatusOK, dashboard)
 		return
 	}
@@ -1102,6 +1133,7 @@ func dashboardHandler(c *gin.Context) {
 		"total_orders":  len(orders),
 		"timestamp":     time.Now(),
 	}
+
 	c.JSON(http.StatusOK, dashboard)
 }
 
@@ -1122,6 +1154,94 @@ func deactivateUserHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deactivated successfully"})
+}
+
+// NEW HANDLER: Admin changing their own password
+func changeAdminPasswordHandler(c *gin.Context) {
+	// Get the current admin's username from the context
+	adminUsername := c.MustGet("username").(string)
+
+	// Parse the request body
+	var request struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// Get the admin user
+	admin, err := getUserByUsername(adminUsername)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving user"})
+		return
+	}
+
+	// Verify the old password
+	if !CheckPasswordHash(request.OldPassword, admin.HashedPassword) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect old password"})
+		return
+	}
+
+	// Hash the new password
+	hashedPassword, err := HashPassword(request.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+		return
+	}
+
+	// Update the admin's password
+	admin.HashedPassword = hashedPassword
+
+	if err := saveUser(admin); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}
+
+// NEW HANDLER: Admin changing another user's password
+func changeUserPasswordHandler(c *gin.Context) {
+	// Get the target user ID from the URL parameter
+	userID := c.Param("id")
+
+	// Parse the request body
+	var request struct {
+		NewPassword string `json:"new_password"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// Get the target user
+	var user User
+	key := fmt.Sprintf("user:%s", userID)
+	if err := getEntity(UsersBucket, key, &user); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Hash the new password
+	hashedPassword, err := HashPassword(request.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+		return
+	}
+
+	// Update the user's password
+	user.HashedPassword = hashedPassword
+
+	if err := saveUser(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User password updated successfully"})
 }
 
 // -------------------
@@ -1153,6 +1273,7 @@ func createInitialAdmin() {
 			log.Println("Error hashing admin password:", err)
 			return
 		}
+
 		admin.HashedPassword = hashed
 		if err := saveUser(admin); err != nil {
 			log.Println("Error creating initial admin user:", err)
@@ -1178,6 +1299,7 @@ func createInitialAdmin() {
 			log.Println("Error hashing standard user password:", err)
 			return
 		}
+
 		standardUser.HashedPassword = hashed
 		if err := saveUser(standardUser); err != nil {
 			log.Println("Error creating standard user:", err)
@@ -1256,7 +1378,6 @@ func main() {
 	api.GET("/orders", getOrdersHandler) // Modified to support employee_id filter
 	// Dashboard - modified for non-admins
 	api.GET("/dashboard", dashboardHandler) // Modified to support employee_id filter
-
 	// Admin-only endpoints
 	adminApi := api.Group("/")
 	adminApi.Use(adminMiddleware())
@@ -1269,6 +1390,9 @@ func main() {
 	adminApi.PUT("/products/:id", updateProductHandler)
 	adminApi.DELETE("/products/:id", deactivateProductHandler)
 	adminApi.DELETE("/products/:id/permanent", deleteProductHandler)
+	// NEW ROUTES: Password management
+	adminApi.POST("/change-password", changeAdminPasswordHandler)          // For admin to change their own password
+	adminApi.POST("/users/:id/change-password", changeUserPasswordHandler) // For admin to change other users' passwords
 
 	// Start the server.
 	port := os.Getenv("PORT")
