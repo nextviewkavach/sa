@@ -1273,7 +1273,7 @@ func main() {
 	// Start the server.
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000"
+		port = "8080"
 	}
 
 	log.Printf("Server running on port %s", port)
