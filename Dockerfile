@@ -24,6 +24,6 @@ COPY . .
 # Build your Go app
 RUN go build -o app .
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["./app"]
