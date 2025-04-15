@@ -1,25 +1,26 @@
-# syntax=docker/dockerfile:1
-
-# Base image
-FROM golang:1.21-alpine
+# Use latest Go image with toolchain support
+FROM golang:1.22
 
 # Set working directory
 WORKDIR /app
 
-# Copy go mod and sum files
+# Copy go.mod and go.sum
 COPY go.mod go.sum ./
+
+# Enable automatic toolchain download
+ENV GOTOOLCHAIN=auto
 
 # Download dependencies
 RUN go mod download
 
-# Copy source files
+# Copy the rest of your code
 COPY . .
 
-# Build the Go app
+# Build your Go app
 RUN go build -o app .
 
-# Expose port (Railway sets env var PORT)
+# Expose the port Railway expects
 EXPOSE 8000
 
-# Start the app
+# Run the app
 CMD ["./app"]
