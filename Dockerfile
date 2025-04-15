@@ -1,26 +1,29 @@
-# Use latest Go image with toolchain support
-FROM golang:1.22
+# Start from a base Alpine image
+FROM alpine:latest
 
-# Set working directory
+# Install curl, git, and build tools
+RUN apk add --no-cache curl git bash build-base
+
+# Install Go 1.23 manually
+RUN curl -LO https://go.dev/dl/go1.23.0.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz && \
+    ln -s /usr/local/go/bin/go /usr/bin/go && \
+    go version
+
+# Set environment variables
+ENV PATH="/usr/local/go/bin:$PATH"
+ENV GOPATH=/go
 WORKDIR /app
 
-# Copy go.mod and go.sum
+# Copy files
 COPY go.mod go.sum ./
-
-# Enable automatic toolchain download
-ENV GOTOOLCHAIN=auto
-
-# Download dependencies
 RUN go mod download
 
-# Copy the rest of your code
 COPY . .
 
 # Build your Go app
 RUN go build -o app .
 
-# Expose the port Railway expects
 EXPOSE 8000
 
-# Run the app
 CMD ["./app"]
