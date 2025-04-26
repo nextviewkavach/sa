@@ -472,27 +472,99 @@ func generateReportData(db *bolt.DB, duration time.Duration) ReportData {
 func generateReportHTML(data ReportData) (string, error) {
 	companyName := "NextView Technologies India Pvt. Ltd"
 	logoURL := "https://www.nexttechgroup.com/wp-content/uploads/2019/04/next-view-logo.png"
-	poweredBy := "Powered By Kavach team"
-	tmpl := `...` // Template content omitted for brevity - assume it's the same as previous
+
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Period}} Client Activity Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 20px;">
+    <!-- Header with Logo and Company Name -->
+    <table width="100%" style="max-width: 800px; margin: auto;">
+        <tr>
+            <td style="display: flex; align-items: center;">
+                <img src="` + logoURL + `" alt="Company Logo" style="height: 50px; margin-right: 20px;">
+                <h2 style="margin: 0;">` + companyName + `</h2>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Title and Period -->
+    <table width="100%" style="max-width: 800px; margin: 20px auto;">
+        <tr>
+            <td>
+                <h3>{{.Period}} Client Activity Report</h3>
+                <p><strong>Period:</strong> {{.StartDate.Format "02 Jan 2006"}} - {{.EndDate.Format "02 Jan 2006"}}</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Client Activity Table -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 800px; margin: auto; border-collapse: collapse; font-size: 14px;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th style="border:1px solid #ccc; padding:8px;">Client ID</th>
+                <th style="border:1px solid #ccc; padding:8px;">Name</th>
+                <th style="border:1px solid #ccc; padding:8px;">Email</th>
+                <th style="border:1px solid #ccc; padding:8px;">Phone</th>
+                <th style="border:1px solid #ccc; padding:8px;">New?</th>
+                <th style="border:1px solid #ccc; padding:8px;">Visits</th>
+                <th style="border:1px solid #ccc; padding:8px;">Orders</th>
+                <th style="border:1px solid #ccc; padding:8px;">₹ Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .ClientSummaries}}
+            <tr>
+                <td style="border:1px solid #ccc; padding:8px;">{{.ClientID}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{.ClientName}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{.ClientEmail}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{.ClientPhone}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{if .IsNew}}Yes{{else}}No{{end}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{.VisitCount}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">{{.OrderCount}}</td>
+                <td style="border:1px solid #ccc; padding:8px;">₹{{printf "%.2f" .TotalOrderValue}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+        <tfoot>
+            <tr style="background-color: #f5f5f5;">
+                <td colspan="7" style="border:1px solid #ccc; padding:8px; text-align:right;"><strong>Total Value:</strong></td>
+                <td style="border:1px solid #ccc; padding:8px;"><strong>₹{{printf "%.2f" .TotalReportOrderValue}}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Footer with Notice and Branding -->
+    <table width="100%" style="max-width: 800px; margin: 40px auto 0;">
+        <tr>
+            <td style="font-size: 12px; color: gray; text-align: center;">
+                This is an auto-generated report. Please do not reply.
+            </td>
+        </tr>
+        <tr>
+            <td style="font-size: 12px; color: red; font-weight: bold; text-align: right;">
+                Powered By Kavach Team
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>`
+
 	t, err := template.New("report").Parse(tmpl)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse report template: %w", err)
 	}
-	templateData := struct {
-		ReportData
-		CompanyName string
-		LogoURL     string
-		PoweredBy   string
-	}{
-		ReportData:  data,
-		CompanyName: companyName,
-		LogoURL:     logoURL,
-		PoweredBy:   poweredBy,
-	}
+
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, templateData); err != nil {
+	if err := t.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute report template: %w", err)
 	}
+
 	return buf.String(), nil
 }
 
